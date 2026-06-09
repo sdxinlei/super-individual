@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{站点标题}} — {{副标题}}</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========== 导航 ========== -->
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <a href="#" class="logo">{{LOGO}}</a>
+      <ul class="nav-links">
+        <li><a href="#hero">首页</a></li>
+        <li><a href="#services">服务</a></li>
+        <li><a href="#projects">案例</a></li>
+        <li><a href="#contact">联系</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ========== Hero ========== -->
+  <section id="hero" class="hero">
+    <div class="container">
+      <div class="hero-badge">✦ {{标签}}</div>
+      <h1 class="hero-title">{{主标题}}</h1>
+      <p class="hero-desc">{{副标题描述}}</p>
+      <div class="hero-actions">
+        <a href="#contact" class="btn btn-primary">立即咨询</a>
+        <a href="#projects" class="btn btn-outline">查看案例</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 服务 ========== -->
+  <section id="services" class="section">
+    <div class="container">
+      <h2 class="section-title">服务</h2>
+      <p class="section-desc">{{服务描述}}</p>
+      <div class="cards">
+        <div class="card">
+          <div class="card-icon">🛠</div>
+          <h3>服务一</h3>
+          <p>{{服务一描述}}</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">⚡</div>
+          <h3>服务二</h3>
+          <p>{{服务二描述}}</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🚀</div>
+          <h3>服务三</h3>
+          <p>{{服务三描述}}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 案例 ========== -->
+  <section id="projects" class="section section-alt">
+    <div class="container">
+      <h2 class="section-title">案例</h2>
+      <p class="section-desc">{{案例描述}}</p>
+      <div class="projects-grid">
+        <div class="project-card">
+          <div class="project-img" style="background: var(--accent-dim);">项目截图</div>
+          <div class="project-info">
+            <h3>项目名称</h3>
+            <p>项目简述</p>
+            <div class="project-tags">
+              <span>React</span>
+              <span>Node.js</span>
+              <span>PostgreSQL</span>
+            </div>
+          </div>
+        </div>
+        <div class="project-card">
+          <div class="project-img" style="background: var(--accent-dim);">项目截图</div>
+          <div class="project-info">
+            <h3>项目名称</h3>
+            <p>项目简述</p>
+            <div class="project-tags">
+              <span>Python</span>
+              <span>LLM</span>
+              <span>FastAPI</span>
+            </div>
+          </div>
+        </div>
+        <div class="project-card">
+          <div class="project-img" style="background: var(--accent-dim);">项目截图</div>
+          <div class="project-info">
+            <h3>项目名称</h3>
+            <p>项目简述</p>
+            <div class="project-tags">
+              <span>Vue</span>
+              <span>TypeScript</span>
+              <span>AWS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 联系 ========== -->
+  <section id="contact" class="section">
+    <div class="container">
+      <h2 class="section-title">联系</h2>
+      <p class="section-desc">{{联系方式描述}}</p>
+      <div class="contact-content">
+        <div class="contact-item">
+          <span class="contact-label">微信</span>
+          <span>{{微信号}}</span>
+        </div>
+        <div class="contact-item">
+          <span class="contact-label">邮箱</span>
+          <span>{{邮箱地址}}</span>
+        </div>
+        <div class="contact-item">
+          <span class="contact-label">服务时间</span>
+          <span>周一至周五 9:00 — 18:00</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Footer ========== -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; {{年份}} {{站点名称}}. All rights reserved.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

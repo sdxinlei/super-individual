@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{工具名称}} — 在线工具</title>
+  <style>
+    /* ========== Reset & 变量 ========== */
+    :root {
+      --bg: #f8f9fb;
+      --surface: #ffffff;
+      --border: #e2e6ef;
+      --text: #1a1d26;
+      --text-secondary: #6b7280;
+      --primary: #4f6ef7;
+      --primary-hover: #3b5ce7;
+      --primary-glow: rgba(79, 110, 247, 0.12);
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Microsoft YaHei", sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* ========== Header ========== */
+    .header {
+      text-align: center;
+      padding: 60px 20px 40px;
+    }
+    .header-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .header p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ========== 主卡片 ========== */
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .tool-card h2 {
+      font-size: 1.15rem;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    /* ========== 表单控件 ========== */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .form-group textarea,
+    .form-group input[type="text"],
+    .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      resize: vertical;
+    }
+    .form-group textarea:focus,
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+    .form-group textarea {
+      min-height: 120px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ========== 结果区 ========== */
+    .result-area {
+      margin-top: 20px;
+      padding: 16px;
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      min-height: 60px;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+      display: none;
+    }
+    .result-area.visible {
+      display: block;
+    }
+
+    /* ========== Footer ========== */
+    .footer {
+      margin-top: auto;
+      text-align: center;
+      padding: 32px 20px;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ========== 加载状态 ========== */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ========== 响应式 ========== */
+    @media (max-width: 480px) {
+      .header { padding: 40px 16px 24px; }
+      .header h1 { font-size: 1.5rem; }
+      .tool-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== Header ========== -->
+  <header class="header">
+    <div class="header-icon">{{图标}}</div>
+    <h1>{{工具名称}}</h1>
+    <p>{{工具简短描述}}</p>
+  </header>
+
+  <!-- ========== 工具主体 ========== -->
+  <main class="container">
+
+    <div class="tool-card">
+      <h2>{{输入区域标题}}</h2>
+
+      <!-- 输入表单 — 按工具需求增删字段 -->
+      <div class="form-group">
+        <label for="input-text">输入内容</label>
+        <textarea id="input-text" placeholder="{{占位文字}}"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="options">选项</label>
+        <select id="options">
+          <option value="option1">选项 1</option>
+          <option value="option2">选项 2</option>
+          <option value="option3">选项 3</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary" id="action-btn" onclick="handleAction()">
+        执行
+      </button>
+
+      <!-- 结果展示 -->
+      <div class="result-area" id="result-area"></div>
+    </div>
+
+    <!-- 说明区（可选） -->
+    <div class="tool-card">
+      <h2>使用说明</h2>
+      <p>{{填写使用说明、注意事���、格式要求等}}</p>
+    </div>
+
+  </main>
+
+  <!-- ========== Footer ========== -->
+  <footer class="footer">
+    <div class="container">
+      <p>{{版权信息}}</p>
+    </div>
+  </footer>
+
+  <!-- ========== 脚本 ========== -->
+  <script>
+    // === 核心逻辑 — 按需实现 ===
+
+    const inputEl = document.getElementById('input-text');
+    const optionsEl = document.getElementById('options');
+    const resultEl = document.getElementById('result-area');
+    const actionBtn = document.getElementById('action-btn');
+
+    async function handleAction() {
+      const input = inputEl.value.trim();
+      if (!input) {
+        showResult('请输入内容');
+        return;
+      }
+
+      // 加载状态
+      actionBtn.disabled = true;
+      actionBtn.innerHTML = '<span class="spinner"></span> 处理中...';
+      resultEl.classList.remove('visible');
+
+      try {
+        // === 在这里实现工具的核心处理逻辑 ===
+        //
+        // 示例：模拟异步处理
+        await new Promise(r => setTimeout(r, 800));
+
+        const option = optionsEl.value;
+        const output = `你输入了：${input}\n选择的选项：${option}\n\n（这里替换为实际处理结果）`;
+
+        showResult(output);
+      } catch (err) {
+        showResult('出错：' + err.message);
+      } finally {
+        actionBtn.disabled = false;
+        actionBtn.textContent = '执行';
+      }
+    }
+
+    function showResult(text) {
+      resultEl.textContent = text;
+      resultEl.classList.add('visible');
+    }
+
+    // 回车触发
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        handleAction();
+      }
+    });
+  </script>
+
+</body>
+</html>
