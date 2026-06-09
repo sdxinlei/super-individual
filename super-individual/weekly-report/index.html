@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI 周报生成器 - 输入每日工作要点，AI 自动生成结构化 Markdown 周报，支持复制和导出。超级个体出品。">
+    <meta name="keywords" content="AI周报生成器, 周报工具, 周报自动生成, Markdown周报, 工作效率工具, 超级个体">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="AI 周报生成器 · 超级个体">
+    <meta property="og:description" content="输入每天的工作内容，AI 自动生成结构化 Markdown 周报，支持一键复制和导出。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://super-individual.com/weekly-report/">
+    <meta property="og:locale" content="zh_CN">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AI 周报生成器 · 超级个体">
+    <meta name="twitter:description" content="输入每天的工作内容，AI 自动生成结构化 Markdown 周报，支持一键复制和导出。">
+
+    <!-- JSON-LD Structured Data: WebApplication -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "AI 周报生成器",
+        "url": "https://super-individual.com/weekly-report/",
+        "description": "输入每日工作要点，AI 自动生成结构化 Markdown 周报。Web 界面，支持复制、导出。",
+        "applicationCategory": "ProductivityApplication",
+        "operatingSystem": "All",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "CNY"
+        }
+    }
+    </script>
+
+    <title>AI 周报生成器 · 超级个体</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .tool-hero {
+            padding: 120px 0 40px;
+            text-align: center;
+        }
+        .tool-hero h1 { font-size: 2rem; margin-bottom: 8px; }
+        .tool-hero p { color: #a1a1aa; margin-bottom: 0; }
+        .tool-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+        }
+        .input-section {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+        .input-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #e4e4e7;
+        }
+        .day-input {
+            margin-bottom: 12px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .day-label {
+            min-width: 60px;
+            padding-top: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #a1a1aa;
+        }
+        .day-input textarea {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #e4e4e7;
+            font-size: 0.9rem;
+            font-family: inherit;
+            line-height: 1.5;
+            min-height: 60px;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+        .day-input textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .day-input textarea::placeholder { color: #52525b; }
+
+        .extra-input {
+            margin-top: 16px;
+        }
+        .extra-input label {
+            display: block;
+            font-size: 0.85rem;
+            color: #a1a1aa;
+            margin-bottom: 8px;
+        }
+        .extra-input input, .extra-input select {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #e4e4e7;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+        .extra-input input:focus, .extra-input select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .extra-input select option { background: #1a1a2e; }
+
+        .tool-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        .loading.active { display: block; }
+        .spinner {
+            width: 36px; height: 36px;
+            border: 3px solid rgba(99,102,241,0.2);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading p { color: #a1a1aa; font-size: 0.9rem; }
+
+        /* Output */
+        .output-section {
+            display: none;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 28px;
+        }
+        .output-section.active { display: block; }
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .output-header h3 { font-size: 1rem; font-weight: 600; }
+        .output-actions { display: flex; gap: 8px; }
+        .output-actions button {
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: #a1a1aa;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .output-actions button:hover {
+            background: rgba(99,102,241,0.1);
+            border-color: rgba(99,102,241,0.3);
+            color: #a5b4fc;
+        }
+        #reportContent {
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: #d4d4d8;
+        }
+        #reportContent h1, #reportContent h2, #reportContent h3 {
+            color: #e4e4e7;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+        #reportContent ul { padding-left: 20px; margin: 8px 0; }
+        #reportContent li { margin-bottom: 4px; }
+        #reportContent hr { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 20px 0; }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            color: #71717a;
+            font-size: 0.85rem;
+        }
+        .back-link:hover { color: #a1a1aa; }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(99,102,241,0.9);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo"><a href="../index.html" style="color:inherit">🚀 超级个体</a></div>
+            <div class="nav-links">
+                <a href="../index.html#works">作品</a>
+                <a href="../index.html#contact" class="btn-primary">联系我</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="tool-hero">
+        <div class="container">
+            <h1>📝 AI 周报生成器</h1>
+            <p>输入每天的工作内容，一键生成结构化周报</p>
+        </div>
+    </div>
+
+    <div class="tool-container">
+        <div class="input-section">
+            <h3>📅 填写本周工作</h3>
+            <div class="day-input">
+                <span class="day-label">周一</span>
+                <textarea id="mon" placeholder="周一做了什么？完成了什么任务？"></textarea>
+            </div>
+            <div class="day-input">
+                <span class="day-label">周二</span>
+                <textarea id="tue" placeholder="周二做了什么？"></textarea>
+            </div>
+            <div class="day-input">
+                <span class="day-label">周三</span>
+                <textarea id="wed" placeholder="周三做了什么？"></textarea>
+            </div>
+            <div class="day-input">
+                <span class="day-label">周四</span>
+                <textarea id="thu" placeholder="周四做了什么？"></textarea>
+            </div>
+            <div class="day-input">
+                <span class="day-label">周五</span>
+                <textarea id="fri" placeholder="周五做了什么？"></textarea>
+            </div>
+
+            <div class="extra-input">
+                <label for="projectName">项目/团队名称（可选）</label>
+                <input type="text" id="projectName" placeholder="例如：超级个体项目">
+            </div>
+            <div class="extra-input">
+                <label for="tone">周报风格</label>
+                <select id="tone">
+                    <option value="professional">专业详细</option>
+                    <option value="concise">简洁扼要</option>
+                    <option value="technical">技术向</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="tool-actions">
+            <button class="btn-primary" onclick="generateReport()">✨ 生成周报</button>
+            <button class="btn-secondary" onclick="clearAll()">清空</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>AI 正在生成周报...</p>
+        </div>
+
+        <div class="output-section" id="outputSection">
+            <div class="output-header">
+                <h3>📋 生成的周报</h3>
+                <div class="output-actions">
+                    <button onclick="copyReport()">📋 复制</button>
+                    <button onclick="downloadReport()">⬇ 下载</button>
+                </div>
+            </div>
+            <div id="reportContent"></div>
+        </div>
+
+        <a href="../index.html" class="back-link">← 返回主页</a>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- Google Analytics (placeholder - uncomment to enable)
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+    -->
+
+    <script src="app.js"></script>
+</body>
+</html>

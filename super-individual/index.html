@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="超级个体 - AI 工具开发者，用 AI 双引擎打造产品，一个人全栈交付">
+    <meta name="keywords" content="超级个体, AI工具, 独立开发, Claude Code, Codex, AI独立开发者, 个人生产力, 全栈开发">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="超级个体 | AI 工具开发者">
+    <meta property="og:description" content="超级个体 — 一个人 + AI 双引擎，做工具、写代码、自动化，一个人全栈交付。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://super-individual.com/">
+    <meta property="og:locale" content="zh_CN">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="超级个体 | AI 工具开发者">
+    <meta name="twitter:description" content="超级个体 — 一个人 + AI 双引擎，做工具、写代码、自动化，一个人全栈交付。">
+
+    <!-- JSON-LD Structured Data: WebSite -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "超级个体",
+        "url": "https://super-individual.com/",
+        "description": "超级个体 — AI 工具开发者，用 AI 双引擎打造产品，一个人全栈交付。",
+        "author": {
+            "@type": "Person",
+            "name": "超级个体"
+        },
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://super-individual.com/search?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+
+    <title>超级个体 | AI 工具开发者</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">🚀 超级个体</div>
+            <div class="nav-links">
+                <a href="#works">作品</a>
+                <a href="#services">服务</a>
+                <a href="#about">关于</a>
+                <a href="#contact" class="btn-primary">联系我</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-bg"></div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">AI 独立开发者</div>
+                <h1>用 <span class="gradient-text">AI 杠杆</span><br>撬动个人生产力</h1>
+                <p class="hero-sub">我 + AI = 一个小团队。做工具、写代码、自动化，一个人全栈交付。</p>
+                <div class="hero-actions">
+                    <a href="#works" class="btn btn-primary">看作品</a>
+                    <a href="#contact" class="btn btn-outline">合作咨询</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number" id="toolCount">0</span>
+                        <span class="stat-label">AI 工具</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number" id="projCount">0</span>
+                        <span class="stat-label">交付项目</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number" id="dayCount">0</span>
+                        <span class="stat-label">独立开发天数</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="works" class="section">
+        <div class="container">
+            <h2 class="section-title">作品</h2>
+            <p class="section-desc">用 AI 双引擎快速构建的实用工具</p>
+            <div class="works-grid">
+                <div class="work-card">
+                    <div class="work-icon">📋</div>
+                    <h3>AI 周报生成器</h3>
+                    <p>输入每日工作要点，AI 自动生成结构化 Markdown 周报。Web 界面，支持复制、导出。</p>
+                    <div class="work-tags">
+                        <span>Web</span>
+                        <span>效率工具</span>
+                        <span>AI</span>
+                    </div>
+                    <a href="weekly-report/index.html" class="work-link">试用 →</a>
+                </div>
+                <div class="work-card">
+                    <div class="work-icon">✍️</div>
+                    <h3>AI 文案助手</h3>
+                    <p>输入产品信息，自动生成小红书文案和 X/Twitter 推文。一键多平台分发。</p>
+                    <div class="work-tags">
+                        <span>Web</span>
+                        <span>JS</span>
+                        <span>已上线</span>
+                    </div>
+                    <a href="copywriter/index.html" class="work-link">试用 →</a>
+                </div>
+                <div class="work-card">
+                    <div class="work-icon">🌐</div>
+                    <h3>超级个体 · 本站</h3>
+                    <p>个人作品集与品牌站点，极简深色科技风，零依赖静态部署。</p>
+                    <div class="work-tags">
+                        <span>HTML</span>
+                        <span>CSS</span>
+                        <span>GitHub Pages</span>
+                    </div>
+                    <a href="#" class="work-link">本站在此 →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">服务</h2>
+            <p class="section-desc">我能为你做什么</p>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">🤖</div>
+                    <h3>AI 自动化</h3>
+                    <p>工作流自动化、数据爬取、报告生成、智能客服搭建</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">🛠️</div>
+                    <h3>工具开发</h3>
+                    <p>Web 工具、Chrome 插件、API 集成、SaaS MVP 快速实现</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">💡</div>
+                    <h3>AI 咨询</h3>
+                    <p>用 AI 改造业务流程、降本增效方案设计、技术顾问</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="section">
+        <div class="container">
+            <h2 class="section-title">关于</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p><strong>超级个体</strong> 是一个实验——一个人 + AI 双引擎能否达到一个小团队的生产力？</p>
+                    <p>我用 <strong>Claude Code（架构/策略）</strong>和 <strong>Codex（执行/编码）</strong>双 AI 引擎协作，专注于快速打造有价值的工具产品。每一个工具从想法到上线不超过 7 天。</p>
+                    <p>我相信未来属于会使用 AI 杠杆的个体。一个人 + AI = 无限可能。</p>
+                </div>
+                <div class="about-stats">
+                    <div class="stat">
+                        <span class="stat-num">2</span>
+                        <span class="stat-label">AI 引擎</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-num">100</span>
+                        <span class="stat-label">万目标</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">合作</h2>
+            <p class="section-desc">有项目需求或合作意向？一起探讨 AI 赋能的可能性</p>
+            <div class="contact-links">
+                <a href="https://github.com/" target="_blank" class="contact-item">
+                    <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    <span>GitHub</span>
+                </a>
+                <a href="#" class="contact-item">
+                    <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    <span>X / Twitter</span>
+                </a>
+                <a href="mailto:hello@super-individual.com" class="contact-item">
+                    <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    <span>Email</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 超级个体 · 用 AI 撬动生产力</p>
+            <p class="footer-motto">一个人 + AI 双引擎 = ∞</p>
+        </div>
+    </footer>
+
+    <!-- Google Analytics (placeholder - uncomment to enable)
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+    -->
+
+    <script src="js/main.js"></script>
+</body>
+</html>

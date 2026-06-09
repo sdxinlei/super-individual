@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI 文案助手 - 输入产品信息，自动生成小红书文案、X/Twitter 推文和朋友圈文案。一键多平台分发，超级个体出品。">
+    <meta name="keywords" content="AI文案助手, AI写文案, 小红书文案生成, Twitter推文生成, 社交媒体文案, AI营销工具, 超级个体">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="AI 文案助手 · 超级个体">
+    <meta property="og:description" content="输入产品信息，一键生成小红书、Twitter、朋友圈社交媒体推广文案，支持多种风格。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://super-individual.com/copywriter/">
+    <meta property="og:locale" content="zh_CN">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AI 文案助手 · 超级个体">
+    <meta name="twitter:description" content="输入产品信息，一键生成小红书、Twitter、朋友圈社交媒体推广文案，支持多种风格。">
+
+    <!-- JSON-LD Structured Data: WebApplication -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "AI 文案助手",
+        "url": "https://super-individual.com/copywriter/",
+        "description": "输入产品信息，自动生成小红书文案和 X/Twitter 推文。一键多平台分发。",
+        "applicationCategory": "MarketingApplication",
+        "operatingSystem": "All",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "CNY"
+        }
+    }
+    </script>
+
+    <title>AI 文案助手 · 超级个体</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .tool-hero {
+            padding: 120px 0 40px;
+            text-align: center;
+        }
+        .tool-hero h1 { font-size: 2rem; margin-bottom: 8px; }
+        .tool-hero p { color: #a1a1aa; margin-bottom: 0; }
+        .tool-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+        }
+        .input-section {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+        .input-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #e4e4e7;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #a1a1aa;
+            margin-bottom: 8px;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: #e4e4e7;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .form-group select option { background: #1a1a2e; }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .platform-toggles {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .platform-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            color: #a1a1aa;
+            user-select: none;
+        }
+        .platform-toggle:hover {
+            border-color: rgba(99,102,241,0.3);
+        }
+        .platform-toggle.active {
+            border-color: #6366f1;
+            background: rgba(99,102,241,0.1);
+            color: #a5b4fc;
+        }
+        .platform-toggle input { display: none; }
+
+        .tool-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        .loading.active { display: block; }
+        .spinner {
+            width: 36px; height: 36px;
+            border: 3px solid rgba(99,102,241,0.2);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading p { color: #a1a1aa; font-size: 0.9rem; }
+
+        .output-section {
+            display: none;
+        }
+        .output-section.active { display: block; }
+
+        .output-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .output-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .output-card-header h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .output-card-header .platform-badge {
+            font-size: 0.75rem;
+            padding: 2px 10px;
+            border-radius: 12px;
+            background: rgba(99,102,241,0.1);
+            color: #a5b4fc;
+        }
+        .output-text {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: #d4d4d8;
+            white-space: pre-wrap;
+            margin-bottom: 12px;
+        }
+        .copy-btn {
+            padding: 4px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: #a1a1aa;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background: rgba(99,102,241,0.1);
+            border-color: rgba(99,102,241,0.3);
+            color: #a5b4fc;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 24px;
+            color: #71717a;
+            font-size: 0.85rem;
+        }
+        .back-link:hover { color: #a1a1aa; }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(99,102,241,0.9);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: all 0.3s;
+            pointer-events: none;
+            z-index: 200;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 640px) {
+            .form-row { grid-template-columns: 1fr; }
+            .platform-toggles { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo"><a href="../index.html" style="color:inherit">🚀 超级个体</a></div>
+            <div class="nav-links">
+                <a href="../index.html#works">作品</a>
+                <a href="../index.html#contact" class="btn-primary">联系我</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="tool-hero">
+        <div class="container">
+            <h1>✍️ AI 文案助手</h1>
+            <p>输入产品信息，一键生成社交媒体推广文案</p>
+        </div>
+    </div>
+
+    <div class="tool-container">
+        <div class="input-section">
+            <h3>📝 产品信息</h3>
+            <div class="form-group">
+                <label for="productName">产品/品牌名称</label>
+                <input type="text" id="productName" placeholder="例如：超级个体周报生成器">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="productDesc">一句话描述</label>
+                    <input type="text" id="productDesc" placeholder="例如：用 AI 一键生成工作周报的工具">
+                </div>
+                <div class="form-group">
+                    <label for="targetAudience">目标受众</label>
+                    <input type="text" id="targetAudience" placeholder="例如：职场白领、管理者">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="keyHighlights">核心卖点（每行一个）</label>
+                <textarea id="keyHighlights" placeholder="省时：3 秒生成周报&#10;智能：AI 自动润色&#10;免费：完全免费使用"></textarea>
+            </div>
+            <div class="form-group">
+                <label>发布平台</label>
+                <div class="platform-toggles">
+                    <label class="platform-toggle active" data-platform="xiaohongshu">
+                        <input type="checkbox" checked> 📕 小红书
+                    </label>
+                    <label class="platform-toggle active" data-platform="twitter">
+                        <input type="checkbox" checked> 🐦 X/Twitter
+                    </label>
+                    <label class="platform-toggle" data-platform="wechat">
+                        <input type="checkbox"> 💬 朋友圈
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="tone">文案风格</label>
+                    <select id="tone">
+                        <option value="casual">轻松口语</option>
+                        <option value="professional" selected>专业正式</option>
+                        <option value="humorous">幽默风趣</option>
+                        <option value="urgent">紧迫感</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="count">生成条数（每条最多）</label>
+                    <select id="count">
+                        <option value="2">2 条</option>
+                        <option value="3" selected>3 条</option>
+                        <option value="5">5 条</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="tool-actions">
+            <button class="btn-primary" onclick="generateCopy()">✨ 生成文案</button>
+            <button class="btn-secondary" onclick="clearAll()">清空</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>AI 正在创作文案...</p>
+        </div>
+
+        <div class="output-section" id="outputSection"></div>
+
+        <a href="../index.html" class="back-link">← 返回主页</a>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Platform toggle
+        document.querySelectorAll('.platform-toggle').forEach(el => {
+            el.addEventListener('click', function() {
+                const cb = this.querySelector('input[type=checkbox]');
+                cb.checked = !cb.checked;
+                this.classList.toggle('active');
+            });
+        });
+
+        // 文案模板库
+        const TEMPLATES = {
+            xiaohongshu: {
+                casual: [
+                    (p) => `标题：发现了一个宝藏工具 🔥\n\n家人们谁懂啊！这个 ${p.name} 真的太好用了！！\n\n${p.desc}\n\n✨ ${p.highlights[0]}\n✨ ${p.highlights[1] || ''}\n✨ ${p.highlights[2] || ''}\n\n自从用了它，工作效率直接翻倍💪\n适合 ${p.audience} 宝子们冲！\n\n#AI工具 #效率提升 #打工人必备`,
+                    (p) => `标题：后悔没早点知道！\n\n被同事安利的 ${p.name}，用了一次就真香了😭\n\n${p.desc}\n\n真的，${p.highlights[0]}\n而且 ${p.highlights[1] || '操作也特别简单'}\n\n推荐给所有 ${p.audience}！\n用了就回不去了！\n\n#效率工具 #AI #职场必备`,
+                    (p) => `标题：0 成本提升效率的方法📌\n\n分享一个我每天都在用的工具：${p.name}\n\n${p.desc}\n\n✅ ${p.highlights[0]}\n✅ ${p.highlights[1] || '免费使用'}\n\n真的解放双手，省下时间做更有价值的事🥹\n${p.audience} 都给我冲！\n\n#效率提升 #AI工具 #打工人`,
+                ],
+                professional: [
+                    (p) => `标题：推荐一款提升团队效率的 AI 工具\n\n近期深度使用 ${p.name}，分享一下使用体验。\n\n${p.desc}\n\n核心优��：\n• ${p.highlights[0]}\n• ${p.highlights[1] || '操作简便，零学习成本'}\n• ${p.highlights[2] || '持续迭代，响应反馈'}\n\n推荐给 ${p.audience}，值得尝试。\n\n#AI #效率工具 #产品推荐`,
+                    (p) => `标题：用 AI 重构工作流，这个工具值得关注\n\n${p.name} —— ${p.desc}\n\n在实际使用中，我发现了几个显著优势：\n\n1️⃣ ${p.highlights[0]}\n2️⃣ ${p.highlights[1] || '用户体验流畅'}\n3️⃣ ${p.highlights[2] || '持续的 AI 能力升级'}\n\n如果你也是 ${p.audience}，强烈建议体验一下。\n\n#AI产品 #效率提升 #工具推荐`,
+                ],
+                humorous: [
+                    (p) => `标题：刚发现了一个摸鱼神器 🤫\n\n嘘！小声说 🤫\n\n这个 ${p.name} 真的太离谱了\n${p.desc}\n\n以前写周报要 1 小时\n现在 ${p.highlights[0]}\n剩下的时间...你懂的 😏\n\n适合 ${p.audience}\n别问我是怎么知道的\n\n#摸鱼 #AI工具 #打工人自救指南`,
+                ],
+                urgent: [
+                    (p) => `标题：别再手动写周报了！🔥\n\n你的同事已经用 ${p.name} 领先一步了。\n\n${p.desc}\n\n⏰ ${p.highlights[0]}\n🔥 ${p.highlights[1] || '团队协作效率翻倍'}\n\n${p.audience} 都在用，你还在等什么？\n现在就用起来！\n\n#AI #效率 #职场`,
+                ]
+            },
+            twitter: {
+                casual: [
+                    (p) => `发现了 ${p.name}，真的太好用了！\n\n${p.desc}\n\n特点：\n✅ ${p.highlights[0]}\n✅ ${p.highlights[1] || '超简单'}\n\n推荐给 ${p.audience} 🔥\n\n#AI #Productivity #Tools`,
+                    (p) => `I built ${p.name} and it's been a game changer 🚀\n\n${p.desc}\n\n✨ ${p.highlights[0]}\n✨ ${p.highlights[1] || 'Super easy to use'}\n\nPerfect for ${p.audience}\nTry it out! 👇`,
+                    (p) => `如果你还在手动做 ${p.audience ? '这些事' : ''}，试试 ${p.name}\n\n${p.desc}\n\n省时省力，谁用谁知道 ✅\n\n#AI #Tools #Productivity`,
+                ],
+                professional: [
+                    (p) => `Just released ${p.name} 🚀\n\n${p.desc}\n\nKey features:\n• ${p.highlights[0]}\n• ${p.highlights[1] || 'Clean UX'}\n• ${p.highlights[2] || 'AI-powered'}\n\nBuilt for ${p.audience || 'teams and individuals'}.\n\n#AI #Productivity #IndieHacker`,
+                    (p) => `${p.name} — ${p.desc}\n\nOne thing I've learned: ${p.highlights[0]}\n\nIf you're a ${p.audience || 'builder'}, this might help.\n\n#AI #Tools #BuildInPublic`,
+                ],
+                humorous: [
+                    (p) => `Me before ${p.name}: spending hours on ${p.audience || 'boring stuff'}\nMe after: ☕️🕶️\n\n${p.desc}\n${p.highlights[0]}\n\n#AI #LazyDev #Productivity`,
+                ],
+                urgent: [
+                    (p) => `Stop what you're doing and check this out 👀\n\n${p.name} — ${p.desc}\n\n${p.highlights[0]}\n\n${p.audience || 'Everyone'} needs this. Now. 🔥\n\n#AI #GameChanger`,
+                ]
+            },
+            wechat: {
+                casual: [
+                    (p) => `推荐一个我每天都在用的工具 🔥\n\n${p.name} — ${p.desc}\n\n用了之后最大的感受：\n✅ ${p.highlights[0]}\n✅ ${p.highlights[1] || '操作极其简单'}\n✅ ${p.highlights[2] || '完全免费'}\n\n推荐给身边所有 ${p.audience}，谁用谁知道！\n\n体验地址：${p.url || '点击下方链接'}`,
+                    (p) => `分享一个提升效率的神器 ✨\n\n${p.name}\n${p.desc}\n\n核心功能：\n1. ${p.highlights[0]}\n2. ${p.highlights[1] || '一键生成'}\n\n用了之后每天省下至少 30 分钟 🕐\n推荐给 ${p.audience}`,
+                ],
+                professional: [
+                    (p) => `【工具推荐】${p.name}\n\n${p.desc}\n\n适用人群：${p.audience || '职场人士'}\n\n核心价值：\n• ${p.highlights[0]}\n• ${p.highlights[1] || '提升工作效率'}\n• ${p.highlights[2] || '持续优化迭代'}\n\n欢迎体验交流 🙏`,
+                ],
+                humorous: [
+                    (p) => `发现了一个"偷懒"利器 😎\n\n${p.name} — ${p.desc}\n\n以前干这事要 1 小时\n现在 ${p.highlights[0]} 就搞定了\n\n剩下的时间...你懂的 🤫\n\n推荐给 ${p.audience}（尤其是想摸鱼的）`,
+                ],
+                urgent: [
+                    (p) => `还在手动干这事？🔥\n\n${p.name} 了解一下\n${p.desc}\n\n${p.highlights[0]}\n别人已经在用了，你还在等什么？\n\n#效率 #AI工具`,
+                ]
+            }
+        };
+
+        function getSelectedPlatforms() {
+            return Array.from(document.querySelectorAll('.platform-toggle.active'))
+                .map(el => el.dataset.platform);
+        }
+
+        function pickRandom(arr, count) {
+            const shuffled = [...arr].sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, count);
+        }
+
+        function generateCopy() {
+            const productName = document.getElementById('productName').value.trim();
+            if (!productName) {
+                showToast('请填写产品/品牌名称');
+                return;
+            }
+
+            const productDesc = document.getElementById('productDesc').value.trim() || '一款提升效率的 AI 工具';
+            const targetAudience = document.getElementById('targetAudience').value.trim() || '职场人士';
+            const highlightsText = document.getElementById('keyHighlights').value.trim();
+            const highlights = highlightsText ? highlightsText.split('\n').filter(h => h.trim()).map(h => h.trim()) : ['提升效率', '简单易用'];
+            const tone = document.getElementById('tone').value;
+            const count = parseInt(document.getElementById('count').value);
+            const platforms = getSelectedPlatforms();
+
+            if (platforms.length === 0) {
+                showToast('请至少选择一个发布平台');
+                return;
+            }
+
+            const data = {
+                name: productName,
+                desc: productDesc,
+                audience: targetAudience,
+                highlights: highlights
+            };
+
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('outputSection').classList.remove('active');
+            document.getElementById('outputSection').innerHTML = '';
+
+            setTimeout(() => {
+                let html = '';
+                platforms.forEach(platform => {
+                    const platformTemplates = TEMPLATES[platform];
+                    if (!platformTemplates) return;
+
+                    const toneTemplates = platformTemplates[tone] || platformTemplates['professional'] || platformTemplates['casual'];
+                    const selected = pickRandom(toneTemplates, Math.min(count, toneTemplates.length));
+
+                    const platformNames = { xiaohongshu: '📕 小红书', twitter: '🐦 X/Twitter', wechat: '💬 朋友圈' };
+
+                    selected.forEach((template, i) => {
+                        const text = template(data);
+                        html += `
+                            <div class="output-card">
+                                <div class="output-card-header">
+                                    <h4><span class="platform-badge">${platformNames[platform] || platform}</span> 文案 ${i + 1}</h4>
+                                    <button class="copy-btn" onclick="copyText(this)">📋 复制</button>
+                                </div>
+                                <div class="output-text">${text}</div>
+                            </div>
+                        `;
+                    });
+                });
+
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('outputSection').innerHTML = html;
+                document.getElementById('outputSection').classList.add('active');
+                showToast('✅ 文案生成成功！');
+            }, 800);
+        }
+
+        function copyText(btn) {
+            const text = btn.closest('.output-card').querySelector('.output-text').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('📋 已复制到剪贴板');
+            }).catch(() => {
+                const range = document.createRange();
+                const el = btn.closest('.output-card').querySelector('.output-text');
+                range.selectNode(el);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                showToast('📋 已复制到剪贴板');
+            });
+        }
+
+        function clearAll() {
+            document.getElementById('productName').value = '';
+            document.getElementById('productDesc').value = '';
+            document.getElementById('targetAudience').value = '';
+            document.getElementById('keyHighlights').value = '';
+            document.getElementById('outputSection').classList.remove('active');
+            document.getElementById('outputSection').innerHTML = '';
+            showToast('已清空');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+    </script>
+    <!-- Google Analytics (placeholder - uncomment to enable)
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+    -->
+
+</body>
+</html>
