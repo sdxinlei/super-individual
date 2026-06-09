@@ -3,7 +3,118 @@
  * 超级个体 | AI 工具开发者
  */
 
-// 模拟 AI 生成（示��用，后续可接入真实 API）
+// ============================================================
+// API Key 管理
+// ============================================================
+
+const STORAGE_KEY = 'weekly_report_api_key';
+
+function getApiKey() {
+    const key = document.getElementById('apiKey').value.trim();
+    if (key) {
+        localStorage.setItem(STORAGE_KEY, key);
+    }
+    return key || localStorage.getItem(STORAGE_KEY) || '';
+}
+
+function loadApiKey() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        document.getElementById('apiKey').value = saved;
+    }
+}
+
+// 页面加载时恢复 API Key
+document.addEventListener('DOMContentLoaded', loadApiKey);
+
+// ============================================================
+// Claude API 调用
+// ============================================================
+
+const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
+const CLAUDE_MODEL = 'claude-sonnet-4-6';
+
+function buildPrompt(data) {
+    const { days, projectName, tone } = data;
+    const weekNum = getWeekNumber(new Date());
+    const dateStr = getWeekDateRange();
+    const proj = projectName || '本周工作';
+
+    const toneDesc = {
+        professional: '专业详细风格：结构完整，包含概述、详细内容、下周计划，语言正式',
+        concise: '简洁扼要风格：每行一句话总结每日要点，不做展开',
+        technical: '技术向风格：聚焦技术细节，使用代码块展示关键实现'
+    };
+
+    // 构建每天的内容
+    const dayEntries = [];
+    const dayNames = ['周一', '周二', '周三', '周四', '周五'];
+    const keys = ['mon', 'tue', 'wed', 'thu', 'fri'];
+    keys.forEach((key, i) => {
+        const content = days[key] && days[key].trim();
+        if (content) {
+            dayEntries.push(`### ${dayNames[i]}\n${content}`);
+        } else {
+            dayEntries.push(`### ${dayNames[i]}\n（无记录）`);
+        }
+    });
+
+    return `你是一个专业的周报生成助手。请根据以下每天的工作内容，生成一份结构化的 Markdown 周报。
+
+项目名称：${proj}
+时间范围：${dateStr}（第 ${weekNum} 周）
+风格要求：${toneDesc[tone] || toneDesc.professional}
+
+每天的工作内容：
+${dayEntries.join('\n\n')}
+
+请严格按照 Markdown 格式生成周报。只输出周报内容，不需要额外的说明。`;
+}
+
+async function callClaudeAPI(apiKey, prompt) {
+    const response = await fetch(CLAUDE_API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+            model: CLAUDE_MODEL,
+            max_tokens: 4096,
+            messages: [
+                { role: 'user', content: prompt }
+            ]
+        })
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        const errorType = errorBody?.error?.type || '';
+        const errorMsg = errorBody?.error?.message || response.statusText;
+
+        if (response.status === 401 || response.status === 403) {
+            throw new Error(`API_KEY_INVALID: ${errorMsg}`);
+        }
+        throw new Error(`API_ERROR(${response.status}): ${errorMsg}`);
+    }
+
+    const data = await response.json();
+    let result = '';
+
+    for (const block of data.content) {
+        if (block.type === 'text') {
+            result += block.text;
+        }
+    }
+
+    return result;
+}
+
+// ============================================================
+// 模拟 AI 生成（API 降级备用）
+// ============================================================
+
 function generateMockReport(data) {
     const { days, projectName, tone } = data;
     const weekNum = getWeekNumber(new Date());
@@ -104,7 +215,7 @@ function getWeekDateRange() {
     return `${fmt(monday)} - ${fmt(friday)}`;
 }
 
-function generateReport() {
+async function generateReport() {
     const data = {
         days: {
             mon: document.getElementById('mon').value.trim(),
@@ -127,23 +238,48 @@ function generateReport() {
     document.getElementById('loading').classList.add('active');
     document.getElementById('outputSection').classList.remove('active');
 
-    // Simulate AI generation delay
-    setTimeout(() => {
-        const report = generateMockReport(data);
-        document.getElementById('loading').classList.remove('active');
+    const apiKey = getApiKey();
 
-        const contentEl = document.getElementById('reportContent');
-        contentEl.innerHTML = report.replace(/\n/g, '<br>').replace(/#{3} (.*?)(?:<br>|$)/g, '<h3>$1</h3>')
-            .replace(/## (.*?)(?:<br>|$)/g, '<h2>$1</h2>')
-            .replace(/# (.*?)(?:<br>|$)/g, '<h1>$1</h1>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/---/g, '<hr>')
-            .replace(/- (.*?)(?:<br>|$)/g, '• $1<br>')
-            .replace(/```/g, '');
+    if (apiKey) {
+        try {
+            const prompt = buildPrompt(data);
+            const report = await callClaudeAPI(apiKey, prompt);
+            displayReport(report);
+            showToast('✅ 周报生成成功！');
+            return;
+        } catch (err) {
+            if (err.message.startsWith('API_KEY_INVALID')) {
+                showToast('❌ API Key 无效，请检查后重试。已降级使用模拟数据');
+            } else if (err.message.startsWith('API_ERROR(529)') || err.message.startsWith('API_ERROR(5')) {
+                showToast('⚠️ API 暂时不可用，已降级使用模拟数据');
+            } else {
+                console.warn('API 调用失败，降级到 Mock：', err.message);
+                showToast('⚠️ API 调用失败，已降级使用模拟数据');
+            }
+            // Fall through to mock
+        }
+    }
 
-        document.getElementById('outputSection').classList.add('active');
-        showToast('✅ 周报生成成功！');
-    }, 1200);
+    // Mock fallback (API Key 为空 或 API 调用失败)
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    const report = generateMockReport(data);
+    displayReport(report);
+    showToast('✅ 周报生成成功！');
+}
+
+function displayReport(report) {
+    document.getElementById('loading').classList.remove('active');
+
+    const contentEl = document.getElementById('reportContent');
+    contentEl.innerHTML = report.replace(/\n/g, '<br>').replace(/#{3} (.*?)(?:<br>|$)/g, '<h3>$1</h3>')
+        .replace(/## (.*?)(?:<br>|$)/g, '<h2>$1</h2>')
+        .replace(/# (.*?)(?:<br>|$)/g, '<h1>$1</h1>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/---/g, '<hr>')
+        .replace(/- (.*?)(?:<br>|$)/g, '• $1<br>')
+        .replace(/```/g, '');
+
+    document.getElementById('outputSection').classList.add('active');
 }
 
 function copyReport() {
