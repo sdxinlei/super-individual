@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小红书内容工厂 - AI 内容生成</title>
+    <style>
+        /* ============================
+           全局样式 - 深色科技风 靛蓝紫色系
+           ============================ */
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #12122a;
+            --bg-card: #1a1a3e;
+            --bg-card-hover: #222250;
+            --bg-input: #161638;
+            --border-color: #2a2a5e;
+            --border-focus: #6c5ce7;
+            --text-primary: #e8e8f0;
+            --text-secondary: #a0a0c0;
+            --text-muted: #6a6a8a;
+            --accent: #7c6cf0;
+            --accent-hover: #9b8ff5;
+            --accent-glow: rgba(124, 108, 240, 0.3);
+            --gradient-start: #6c5ce7;
+            --gradient-end: #a855f7;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --font-mono: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* 背景装饰 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 20% 50%, rgba(108, 92, 231, 0.06) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(168, 85, 247, 0.04) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 80%, rgba(124, 108, 240, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ============================
+           导航栏
+           ============================ */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 26, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 24px;
+        }
+
+        .navbar-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .navbar-brand svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .navbar-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .navbar-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .navbar-links a:hover {
+            color: var(--text-primary);
+            background: rgba(124, 108, 240, 0.1);
+        }
+
+        .navbar-links a.active {
+            color: var(--accent);
+            background: rgba(124, 108, 240, 0.12);
+        }
+
+        /* ============================
+           主容器
+           ============================ */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 32px 24px 64px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ============================
+           头部
+           ============================ */
+        .hero {
+            text-align: center;
+            padding: 40px 0 32px;
+        }
+
+        .hero h1 {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 16px;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        /* ============================
+           卡片容器
+           ============================ */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .card:hover {
+            border-color: rgba(124, 108, 240, 0.3);
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ============================
+           表单控件
+           ============================ */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-grid .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s;
+            outline: none;
+            width: 100%;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        /* ============================
+           风格选择
+           ============================ */
+        .style-selector {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .style-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .style-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+            background: rgba(124, 108, 240, 0.08);
+        }
+
+        .style-btn.active {
+            border-color: var(--accent);
+            background: rgba(124, 108, 240, 0.15);
+            color: var(--accent-hover);
+            box-shadow: 0 0 16px var(--accent-glow);
+        }
+
+        .style-btn .style-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .style-btn .style-label {
+            display: block;
+            font-size: 12px;
+        }
+
+        /* ============================
+           字数选择
+           ============================ */
+        .length-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .length-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .length-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .length-btn.active {
+            border-color: var(--accent);
+            background: rgba(124, 108, 240, 0.15);
+            color: var(--accent-hover);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .length-btn .length-desc {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ============================
+           数量选择 + API Key
+           ============================ */
+        .row-group {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+        }
+
+        .row-group .form-group {
+            flex: 1;
+        }
+
+        .row-group .form-group:first-child {
+            flex: 0 0 120px;
+        }
+
+        .number-input-wrapper {
+            position: relative;
+        }
+
+        .number-input-wrapper input[type="number"] {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: var(--text-primary);
+            font-size: 14px;
+            text-align: center;
+            width: 100%;
+            outline: none;
+            transition: all 0.3s;
+            -moz-appearance: textfield;
+        }
+
+        .number-input-wrapper input[type="number"]::-webkit-inner-spin-button,
+        .number-input-wrapper input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .number-input-wrapper input[type="number"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .api-key-row {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .api-key-row input {
+            flex: 1;
+        }
+
+        .api-key-row .clear-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0 16px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 13px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .api-key-row .clear-btn:hover {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .api-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        /* ============================
+           生成按钮
+           ============================ */
+        .generate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px var(--accent-glow);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ============================
+           加载动画
+           ============================ */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        .loading-sub {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        /* ============================
+           进度条动画
+           ============================ */
+        .progress-bar {
+            width: 200px;
+            height: 3px;
+            background: var(--bg-input);
+            border-radius: 2px;
+            margin: 16px auto 0;
+            overflow: hidden;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 2px;
+            animation: progress 2s ease-in-out infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 0; margin-left: 0; }
+            50% { width: 60%; margin-left: 20%; }
+            100% { width: 0; margin-left: 100%; }
+        }
+
+        /* ============================
+           输出区
+           ============================ */
+        .output-section {
+            display: none;
+            margin-top: 8px;
+        }
+
+        .output-section.active {
+            display: block;
+        }
+
+        .copy-all-bar {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .copy-all-btn {
+            background: rgba(124, 108, 240, 0.12);
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            padding: 10px 24px;
+            color: var(--accent-hover);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .copy-all-btn:hover {
+            background: rgba(124, 108, 240, 0.2);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        /* ============================
+           笔记卡片
+           ============================ */
+        .note-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .note-card:hover {
+            border-color: rgba(124, 108, 240, 0.3);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .note-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .note-card-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .copy-btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 7px 14px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent-hover);
+            background: rgba(124, 108, 240, 0.08);
+        }
+
+        .copy-btn:active {
+            transform: scale(0.96);
+        }
+
+        .note-section {
+            margin-bottom: 16px;
+        }
+
+        .note-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .note-field-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .note-title-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-hover);
+            line-height: 1.4;
+        }
+
+        .note-body-text {
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        .note-cover-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .note-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(124, 108, 240, 0.1);
+            border: 1px solid rgba(124, 108, 240, 0.2);
+            border-radius: 20px;
+            color: var(--accent-hover);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* ============================
+           Toast
+           ============================ */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: var(--text-primary);
+            font-size: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 999;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ============================
+           页脚
+           ============================ */
+        .footer {
+            text-align: center;
+            padding: 40px 24px;
+            color: var(--text-muted);
+            font-size: 13px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: var(--accent-hover);
+        }
+
+        /* ============================
+           响应式
+           ============================ */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px 48px;
+            }
+
+            .hero h1 {
+                font-size: 26px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .style-selector {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .length-selector {
+                flex-direction: column;
+            }
+
+            .row-group {
+                flex-direction: column;
+            }
+
+            .row-group .form-group:first-child {
+                flex: 1;
+            }
+
+            .note-card-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .copy-btn-group {
+                flex-wrap: wrap;
+            }
+
+            .navbar-links a {
+                padding: 6px 10px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .style-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .copy-btn-group {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .copy-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================
+    导航栏
+    ============================ -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="../" class="navbar-brand">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                超级个体
+            </a>
+            <div class="navbar-links">
+                <a href="../copywriter/">AI 文案助手</a>
+                <a href="../xhs-factory/" class="active">小红书工厂</a>
+                <a href="../">主站首页</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- ============================
+        头部
+        ============================ -->
+        <div class="hero">
+            <h1>小红书内容工厂</h1>
+            <p>输入主题，AI 自动生成标题、正文、封面文案和标签，一站式产出小红书笔记</p>
+        </div>
+
+        <!-- ============================
+        输入区
+        ============================ -->
+        <div class="card">
+            <div class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                创作设置
+            </div>
+
+            <div class="form-grid">
+                <!-- 主题 -->
+                <div class="form-group full-width">
+                    <label for="topic">主题 / 关键词 <span style="color:var(--error)">*</span></label>
+                    <input type="text" id="topic" placeholder="例如：AI工具推荐、职场穿搭、居家好物..." autocomplete="off">
+                </div>
+
+                <!-- 定位 -->
+                <div class="form-group">
+                    <label for="positioning">产品 / 账号定位</label>
+                    <input type="text" id="positioning" placeholder="例如：效率类AI工具分享" autocomplete="off">
+                </div>
+
+                <!-- 受众 -->
+                <div class="form-group">
+                    <label for="audience">目标受众</label>
+                    <input type="text" id="audience" placeholder="例如：职场白领、大学生、宝妈" autocomplete="off">
+                </div>
+            </div>
+
+            <!-- 风格 -->
+            <div class="form-group" style="margin-top: 20px;">
+                <label>风格</label>
+                <div class="style-selector">
+                    <div class="style-btn active" data-style="种草">
+                        <span class="style-icon">🔥</span>
+                        <span class="style-label">种草</span>
+                    </div>
+                    <div class="style-btn" data-style="干货">
+                        <span class="style-icon">📚</span>
+                        <span class="style-label">干货</span>
+                    </div>
+                    <div class="style-btn" data-style="情感">
+                        <span class="style-icon">💕</span>
+                        <span class="style-label">情感</span>
+                    </div>
+                    <div class="style-btn" data-style="教程">
+                        <span class="style-icon">📖</span>
+                        <span class="style-label">教程</span>
+                    </div>
+                    <div class="style-btn" data-style="测评">
+                        <span class="style-icon">📊</span>
+                        <span class="style-label">测评</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 字数 -->
+            <div class="form-group" style="margin-top: 20px;">
+                <label>字数</label>
+                <div class="length-selector">
+                    <div class="length-btn" data-length="short">
+                        短
+                        <span class="length-desc">~200 字</span>
+                    </div>
+                    <div class="length-btn active" data-length="medium">
+                        中
+                        <span class="length-desc">~500 字</span>
+                    </div>
+                    <div class="length-btn" data-length="long">
+                        长
+                        <span class="length-desc">~1000 字</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数量 + API Key -->
+            <div class="row-group" style="margin-top: 20px;">
+                <div class="form-group">
+                    <label for="noteCount">生成数量</label>
+                    <div class="number-input-wrapper">
+                        <input type="number" id="noteCount" min="1" max="5" value="3">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="apiKeyInput">Claude API Key（可选）</label>
+                    <div class="api-key-row">
+                        <input type="password" id="apiKeyInput" placeholder="sk-ant-... 留空使用本地模板">
+                        <button class="clear-btn" onclick="clearApiKey()">清除</button>
+                    </div>
+                    <div class="api-hint">留空则使用本地模板生成，填写 API Key 将调用 Claude 生成更高质量内容</div>
+                </div>
+            </div>
+
+            <!-- 生成按钮 -->
+            <button class="generate-btn" onclick="generateContent()">
+                <span>✨ 生成内容</span>
+            </button>
+        </div>
+
+        <!-- ============================
+        加载状态
+        ============================ -->
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">AI 正在创作中...</div>
+            <div class="loading-sub">正在生成标题、正文、封面文案和标签</div>
+            <div class="progress-bar">
+                <div class="progress-bar-inner"></div>
+            </div>
+        </div>
+
+        <!-- ============================
+        输出区
+        ============================ -->
+        <div class="output-section" id="outputSection"></div>
+
+        <!-- ============================
+        页脚
+        ============================ -->
+        <div class="footer">
+            <p><a href="../">超级个体</a> &middot; 小红书内容工厂 &middot; AI 驱动的内容创作工具</p>
+        </div>
+
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
