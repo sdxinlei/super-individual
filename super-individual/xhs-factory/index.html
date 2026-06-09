@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小红书内容工厂 - AI 内容生成</title>
+    <title>小红书内容工厂 - AI 内容生成 | 超级个体</title>
+    <meta property="og:title" content="小红书内容工厂 - AI 内容生成 | 超级个体">
+    <meta property="og:description" content="输入主题，AI 自动生成标题、正文、封面文案和标签，一站式产出小红书笔记。免费试用，按量付费。">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://superindividual.dev/og-xhs-factory.png">
+    <meta property="og:url" content="https://superindividual.dev/xhs-factory/">
+    <meta name="description" content="小红书内容工厂 - AI 驱动的笔记生成工具，输入主题，自动产出标题、正文、封面和标签。免费试用每日3次。">
     <style>
         /* ============================
            全局样式 - 深色科技风 靛蓝紫色系
@@ -125,6 +131,27 @@
         .navbar-links a.active {
             color: var(--accent);
             background: rgba(124, 108, 240, 0.12);
+        }
+
+        /* 用量徽章 */
+        .usage-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(124, 108, 240, 0.12);
+            border: 1px solid rgba(124, 108, 240, 0.3);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-hover);
+            cursor: default;
+            white-space: nowrap;
+        }
+        .usage-badge.exhausted {
+            border-color: var(--warning);
+            color: var(--warning);
+            background: rgba(245, 158, 11, 0.1);
         }
 
         /* ============================
@@ -711,6 +738,449 @@
         }
 
         /* ============================
+           模态框通用
+           ============================ */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 640px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+        .modal-close:hover {
+            border-color: var(--error);
+            color: var(--error);
+        }
+        .modal h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .modal .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        /* ============================
+           定价卡片
+           ============================ */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .pricing-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .pricing-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        .pricing-card.recommended {
+            border-color: var(--accent);
+            box-shadow: 0 0 24px var(--accent-glow);
+        }
+        .pricing-card.recommended::before {
+            content: '推荐';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 14px;
+            border-radius: 20px;
+        }
+        .pricing-card .plan-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .pricing-card .plan-price {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent-hover);
+            margin: 12px 0;
+        }
+        .pricing-card .plan-price small {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+        .pricing-card .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px;
+            text-align: left;
+        }
+        .pricing-card .plan-features li {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pricing-card .plan-features li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: 700;
+        }
+        .pricing-card .plan-btn {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            background: transparent;
+            color: var(--accent-hover);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .pricing-card .plan-btn:hover {
+            background: rgba(124, 108, 240, 0.15);
+            box-shadow: 0 0 16px var(--accent-glow);
+        }
+        .pricing-card.recommended .plan-btn {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: #fff;
+            border: none;
+        }
+        .pricing-card.recommended .plan-btn:hover {
+            box-shadow: 0 4px 20px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+        .pricing-note {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        /* ============================
+           统计仪表盘
+           ============================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent-hover);
+        }
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        .stat-card .stat-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .upgrade-cta {
+            text-align: center;
+            padding: 16px;
+            background: rgba(124, 108, 240, 0.08);
+            border: 1px dashed var(--accent);
+            border-radius: 12px;
+        }
+        .upgrade-cta p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .upgrade-cta .upgrade-btn-sm {
+            padding: 10px 28px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upgrade-cta .upgrade-btn-sm:hover {
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        /* ============================
+           历史记录
+           ============================ */
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .history-item {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .history-item:hover {
+            border-color: var(--accent);
+        }
+        .history-item .hi-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--accent-hover);
+            margin-bottom: 4px;
+        }
+        .history-item .hi-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 12px;
+        }
+        .history-item .hi-preview {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .history-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        .history-empty .empty-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* ============================
+           首次引导
+           ============================ */
+        .onboarding-content {
+            text-align: center;
+        }
+        .onboarding-content .onboard-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+        .onboarding-content .feature-list {
+            text-align: left;
+            margin: 20px 0;
+        }
+        .onboarding-content .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(124, 108, 240, 0.1);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .onboarding-content .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .onboarding-content .feature-list .fi-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            width: 28px;
+            text-align: center;
+        }
+        .onboard-btn {
+            padding: 14px 40px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 16px;
+        }
+        .onboard-btn:hover {
+            box-shadow: 0 4px 24px var(--accent-glow);
+        }
+
+        /* ============================
+           升级墙弹窗
+           ============================ */
+        .upgrade-wall .wall-icon {
+            text-align: center;
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+        .upgrade-wall .wall-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .upgrade-wall .wall-desc {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        /* ============================
+           按钮组（随机灵感 + 导出）
+           ============================ */
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .action-bar .form-group {
+            flex: 1;
+        }
+        .inspire-btn, .export-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0 16px;
+            height: 44px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .inspire-btn:hover {
+            border-color: var(--warning);
+            color: var(--warning);
+            background: rgba(245, 158, 11, 0.08);
+        }
+        .export-btn {
+            border-color: var(--accent);
+            color: var(--accent-hover);
+        }
+        .export-btn:hover {
+            background: rgba(124, 108, 240, 0.12);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+        .export-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 感谢页 */
+        .thankyou-section {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .thankyou-section .ty-icon {
+            font-size: 64px;
+            display: block;
+            margin-bottom: 20px;
+        }
+        .thankyou-section h2 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .thankyou-section p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .pricing-grid, .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .action-bar {
+                flex-direction: column;
+            }
+            .modal {
+                padding: 24px 20px;
+            }
+        }
+
+        /* ============================
            响应式
            ============================ */
         @media (max-width: 768px) {
@@ -791,7 +1261,10 @@
                 超级个体
             </a>
             <div class="navbar-links">
-                <a href="../copywriter/">AI 文案助手</a>
+                <a href="javascript:void(0)" onclick="toggleDashboard()" id="navDashboard">统计</a>
+                <a href="javascript:void(0)" onclick="showPricingModal()" id="navPricing">定价</a>
+                <a href="javascript:void(0)" onclick="showHistoryModal()" id="navHistory">历史</a>
+                <span class="usage-badge" id="usageBadge">今日 0/3</span>
                 <a href="../xhs-factory/" class="active">小红书工厂</a>
                 <a href="../">主站首页</a>
             </div>
@@ -904,6 +1377,12 @@
                 </div>
             </div>
 
+            <!-- 按钮组：随机灵感 + 导出 -->
+            <div class="action-bar">
+                <button class="inspire-btn" onclick="randomInspire()">💡 随机灵感</button>
+                <button class="export-btn" id="exportImageBtn" onclick="exportAsImage()" disabled>🖼️ 导出为图片</button>
+            </div>
+
             <!-- 生成按钮 -->
             <button class="generate-btn" onclick="generateContent()">
                 <span>✨ 生成内容</span>
@@ -938,6 +1417,183 @@
 
     <!-- Toast -->
     <div class="toast" id="toast"></div>
+
+    <!-- ============================
+    定价弹窗
+    ============================ -->
+    <div class="modal-overlay" id="pricingModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('pricingModal')">&times;</button>
+            <h2>选择方案</h2>
+            <p class="subtitle">升级解锁所有功能，按量付费，灵活自由</p>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="plan-name">基础版</div>
+                    <div class="plan-price">¥29 <small>/月</small></div>
+                    <ul class="plan-features">
+                        <li>每天 10 次生成</li>
+                        <li>5 种创作风格</li>
+                        <li>历史记录保留</li>
+                        <li>基础模板生成</li>
+                    </ul>
+                    <button class="plan-btn" onclick="upgradePlan('basic')">升级到基础版</button>
+                </div>
+                <div class="pricing-card recommended">
+                    <div class="plan-name">专业版</div>
+                    <div class="plan-price">¥79 <small>/月</small></div>
+                    <ul class="plan-features">
+                        <li>每天 50 次生成</li>
+                        <li>5 种创作风格</li>
+                        <li>批量生成 10 条</li>
+                        <li>API Key 优先调用</li>
+                    </ul>
+                    <button class="plan-btn" onclick="upgradePlan('pro')">升级到专业版</button>
+                </div>
+                <div class="pricing-card">
+                    <div class="plan-name">尊享版</div>
+                    <div class="plan-price">¥199 <small>/月</small></div>
+                    <ul class="plan-features">
+                        <li>无限次生成</li>
+                        <li>5 种创作风格</li>
+                        <li>批量生成 + AI 优化建议</li>
+                        <li>优先客服支持</li>
+                    </ul>
+                    <button class="plan-btn" onclick="upgradePlan('premium')">升级到尊享版</button>
+                </div>
+            </div>
+            <p class="pricing-note">所有价格均为模拟展示，不涉及真实支付</p>
+        </div>
+    </div>
+
+    <!-- ============================
+    升级墙弹窗（超限时弹出）
+    ============================ -->
+    <div class="modal-overlay" id="upgradeWallModal">
+        <div class="modal upgrade-wall">
+            <div class="wall-icon">🔒</div>
+            <div class="wall-title">已达到每日使用上限</div>
+            <p class="wall-desc">免费用户每天可生成 3 次内容。升级到付费方案即可解锁无限次生成。</p>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="plan-name">基础版</div>
+                    <div class="plan-price">¥29 <small>/月</small></div>
+                    <ul class="plan-features">
+                        <li>每天 10 次生成</li>
+                        <li>5 种创作风格</li>
+                        <li>历史记录保留</li>
+                    </ul>
+                    <button class="plan-btn" onclick="upgradePlan('basic')">升级到基础版</button>
+                </div>
+                <div class="pricing-card recommended">
+                    <div class="plan-name">专业版</div>
+                    <div class="plan-price">¥79 <small>/月</small></div>
+                    <ul class="plan-features">
+                        <li>每天 50 次生成</li>
+                        <li>批量生成 10 条</li>
+                        <li>5 种创作风格</li>
+                    </ul>
+                    <button class="plan-btn" onclick="upgradePlan('pro')">升级到专业版</button>
+                </div>
+                <div class="pricing-card">
+                    <div class="plan-name">尊享版</div>
+                    <div class="plan-price">¥199 <small>/月</small></div>
+                    <ul class="plan-features">
+                        <li>无限次生成</li>
+                        <li>批量 + AI 优化</li>
+                        <li>优先客服支持</li>
+                    </ul>
+                    <button class="plan-btn" onclick="upgradePlan('premium')">升级到尊享版</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================
+    统计仪表盘弹窗
+    ============================ -->
+    <div class="modal-overlay" id="dashboardModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('dashboardModal')">&times;</button>
+            <h2>使用统计</h2>
+            <p class="subtitle">你的内容创作数据概览</p>
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <span class="stat-icon">📝</span>
+                    <div class="stat-value" id="statToday">0</div>
+                    <div class="stat-label">今日生成</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">📊</span>
+                    <div class="stat-value" id="statMonth">0</div>
+                    <div class="stat-label">本月总计</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">⚡</span>
+                    <div class="stat-value" id="statRemain">3</div>
+                    <div class="stat-label">剩余次数</div>
+                </div>
+            </div>
+            <div id="dashboardUpgradeCta">
+                <div class="upgrade-cta">
+                    <p>每天只有 3 次免费额度，升级后可解锁更多次数和高级功能</p>
+                    <button class="upgrade-btn-sm" onclick="closeModal('dashboardModal'); showPricingModal();">查看升级方案</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================
+    历史记录弹窗
+    ============================ -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('historyModal')">&times;</button>
+            <h2>历史记录</h2>
+            <p class="subtitle">最近生成的内容，最多保留 50 条</p>
+            <div class="history-list" id="historyList">
+                <div class="history-empty">
+                    <span class="empty-icon">📭</span>
+                    <p>还没有生成记录，快去创作吧！</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================
+    首次引导弹窗
+    ============================ -->
+    <div class="modal-overlay" id="onboardingModal">
+        <div class="modal">
+            <div class="onboarding-content">
+                <span class="onboard-icon">🚀</span>
+                <h2>欢迎使用小红书内容工厂</h2>
+                <p class="subtitle">AI 帮你一站式生成小红书笔记</p>
+                <ul class="feature-list">
+                    <li><span class="fi-icon">🎯</span> <span><strong>输入主题</strong> — 输入关键词或主题，AI 自动生成完整笔记</span></li>
+                    <li><span class="fi-icon">🎨</span> <span><strong>5 种风格</strong> — 种草、干货、情感、教程、测评，一键切换</span></li>
+                    <li><span class="fi-icon">📋</span> <span><strong>一键复制</strong> — 标题、正文、封面文案、标签，全部可复制</span></li>
+                    <li><span class="fi-icon">💾</span> <span><strong>历史记录</strong> — 自动保存生成记录，随时回顾和复用</span></li>
+                    <li><span class="fi-icon">🔓</span> <span><strong>免费试用</strong> — 每天 3 次免费生成，升级解锁无限次</span></li>
+                </ul>
+                <button class="onboard-btn" onclick="closeOnboarding()">开始使用</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================
+    感谢页（升级后显示）
+    ============================ -->
+    <div class="modal-overlay" id="thankyouModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('thankyouModal')">&times;</button>
+            <div class="thankyou-section">
+                <span class="ty-icon">🎉</span>
+                <h2>升级成功！</h2>
+                <p>感谢你的信任，现在可以享受无限次内容生成啦！</p>
+                <button class="onboard-btn" onclick="closeModal('thankyouModal')">开始创作</button>
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>

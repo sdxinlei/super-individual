@@ -1280,4 +1280,360 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('topic')?.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') generateContent();
     });
+
+    // ============================
+    // SaaS 初始化
+    // ============================
+    initUsageTracking();
+    updateUsageBadge();
+
+    // 首次访问引导
+    if (!localStorage.getItem('xhs_onboarding_done')) {
+        setTimeout(function () {
+            openModal('onboardingModal');
+        }, 600);
+    }
 });
+
+// ============================
+// SaaS 模块 - 付费墙、统计、历史记录、随机灵感、导出图片
+// 不改原有 Mock 和 API 逻辑，只叠加新功能
+// ============================
+
+// ---- 常量 ----
+const XHS_USAGE_KEY = 'xhs_factory_usage';
+const XHS_HISTORY_KEY = 'xhs_factory_history';
+const XHS_SUBSCRIPTION_KEY = 'xhs_factory_subscription';
+const FREE_DAILY_LIMIT = 3;
+const MAX_HISTORY = 50;
+
+// ---- 使用次数追踪 ----
+function getTodayKey() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function initUsageTracking() {
+    let usage = loadUsage();
+    const today = getTodayKey();
+    if (!usage[today]) {
+        usage[today] = 0;
+    }
+    saveUsage(usage);
+}
+
+function loadUsage() {
+    try {
+        return JSON.parse(localStorage.getItem(XHS_USAGE_KEY)) || {};
+    } catch {
+        return {};
+    }
+}
+
+function saveUsage(usage) {
+    localStorage.setItem(XHS_USAGE_KEY, JSON.stringify(usage));
+}
+
+function getTodayUsage() {
+    const usage = loadUsage();
+    return usage[getTodayKey()] || 0;
+}
+
+function incrementUsage() {
+    const usage = loadUsage();
+    const today = getTodayKey();
+    usage[today] = (usage[today] || 0) + 1;
+    saveUsage(usage);
+    updateUsageBadge();
+}
+
+function getMonthUsage() {
+    const usage = loadUsage();
+    const now = new Date();
+    const prefix = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    let total = 0;
+    for (const key in usage) {
+        if (key.startsWith(prefix)) {
+            total += usage[key];
+        }
+    }
+    return total;
+}
+
+function getRemainingUsage() {
+    if (isPremium()) return Infinity;
+    return Math.max(0, FREE_DAILY_LIMIT - getTodayUsage());
+}
+
+function isPremium() {
+    const sub = localStorage.getItem(XHS_SUBSCRIPTION_KEY);
+    if (!sub) return false;
+    try {
+        const data = JSON.parse(sub);
+        return data.active === true;
+    } catch {
+        return false;
+    }
+}
+
+function checkUsageLimit() {
+    if (isPremium()) return true;
+    return getTodayUsage() < FREE_DAILY_LIMIT;
+}
+
+function updateUsageBadge() {
+    const badge = document.getElementById('usageBadge');
+    if (!badge) return;
+    if (isPremium()) {
+        badge.textContent = '无限次';
+        badge.classList.remove('exhausted');
+        badge.style.borderColor = 'var(--success)';
+        badge.style.color = 'var(--success)';
+        return;
+    }
+    const used = getTodayUsage();
+    const remain = FREE_DAILY_LIMIT - used;
+    badge.textContent = '今日 ' + used + '/' + FREE_DAILY_LIMIT;
+    if (remain <= 0) {
+        badge.classList.add('exhausted');
+    } else {
+        badge.classList.remove('exhausted');
+    }
+}
+
+// ---- 升级流程 ----
+function upgradePlan(plan) {
+    let label, limit;
+    switch (plan) {
+        case 'basic':
+            label = '基础版';
+            limit = 10;
+            break;
+        case 'pro':
+            label = '专业版';
+            limit = 50;
+            break;
+        case 'premium':
+            label = '尊享版';
+            limit = Infinity;
+            break;
+        default:
+            return;
+    }
+    const subData = {
+        plan: plan,
+        label: label,
+        dailyLimit: limit,
+        active: true,
+        upgradedAt: new Date().toISOString()
+    };
+    localStorage.setItem(XHS_SUBSCRIPTION_KEY, JSON.stringify(subData));
+
+    closeAllModals();
+    updateUsageBadge();
+
+    openModal('thankyouModal');
+}
+
+// ---- 弹窗工具 ----
+function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+}
+
+function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+}
+
+function closeAllModals() {
+    document.querySelectorAll('.modal-overlay').forEach(function (el) {
+        el.classList.remove('active');
+    });
+}
+
+document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('modal-overlay')) {
+        e.target.classList.remove('active');
+    }
+});
+
+// ---- 外部触发的弹窗 ----
+function showPricingModal() {
+    openModal('pricingModal');
+}
+
+function toggleDashboard() {
+    const todayVal = document.getElementById('statToday');
+    const monthVal = document.getElementById('statMonth');
+    const remainVal = document.getElementById('statRemain');
+    if (todayVal) todayVal.textContent = getTodayUsage();
+    if (monthVal) monthVal.textContent = getMonthUsage();
+    if (remainVal) remainVal.textContent = isPremium() ? '无限' : getRemainingUsage();
+
+    const cta = document.getElementById('dashboardUpgradeCta');
+    if (cta) {
+        cta.style.display = isPremium() ? 'none' : 'block';
+    }
+
+    openModal('dashboardModal');
+}
+
+function showHistoryModal() {
+    renderHistory();
+    openModal('historyModal');
+}
+
+// ---- 历史记录 ----
+function saveToHistory(note, style) {
+    let history = loadHistory();
+    const entry = {
+        id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+        title: note.title,
+        body: note.body,
+        coverText: note.coverText,
+        tags: note.tags,
+        style: style,
+        createdAt: new Date().toISOString()
+    };
+    history.unshift(entry);
+    if (history.length > MAX_HISTORY) {
+        history = history.slice(0, MAX_HISTORY);
+    }
+    localStorage.setItem(XHS_HISTORY_KEY, JSON.stringify(history));
+}
+
+function saveAllToHistory(notes, style) {
+    notes.forEach(function (note) {
+        saveToHistory(note, style);
+    });
+}
+
+function loadHistory() {
+    try {
+        return JSON.parse(localStorage.getItem(XHS_HISTORY_KEY)) || [];
+    } catch {
+        return [];
+    }
+}
+
+function clearHistory() {
+    localStorage.removeItem(XHS_HISTORY_KEY);
+    renderHistory();
+    showToast('历史记录已清空');
+}
+
+function renderHistory() {
+    const list = document.getElementById('historyList');
+    if (!list) return;
+    const history = loadHistory();
+    if (history.length === 0) {
+        list.innerHTML = '<div class="history-empty"><span class="empty-icon">📭</span><p>还没有生成记录，快去创作吧！</p></div>';
+        return;
+    }
+    let html = '<div style="text-align:right;margin-bottom:12px;"><button class="copy-btn" onclick="clearHistory()" style="color:var(--error);border-color:var(--error);">清空历史</button></div>';
+    history.forEach(function (item) {
+        const date = new Date(item.createdAt);
+        const dateStr = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0') + ' ' + String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+        html += '<div class="history-item" onclick="useHistoryItem(\'' + item.id + '\')">' +
+            '<div class="hi-title">' + escapeHtml(item.title) + '</div>' +
+            '<div class="hi-meta"><span>' + dateStr + '</span><span>风格: ' + (item.style || '未知') + '</span></div>' +
+            '<div class="hi-preview">' + escapeHtml(item.body.substring(0, 80)) + '...</div>' +
+        '</div>';
+    });
+    list.innerHTML = html;
+}
+
+function useHistoryItem(id) {
+    const history = loadHistory();
+    const item = history.find(function (h) { return h.id === id; });
+    if (!item) {
+        showToast('记录不存在');
+        return;
+    }
+    const topicInput = document.getElementById('topic');
+    if (topicInput) topicInput.value = item.title.replace(/[\[\]【】🔥💕📚📖📊🌟✨]/g, '').trim();
+    closeModal('historyModal');
+    showToast('已填入主题，点击生成即可创作');
+    document.getElementById('topic')?.focus();
+}
+
+// ---- 随机灵感 ----
+const INSPIRE_TOPICS = [
+    'AI工具推荐', '职场穿搭', '居家好物', '效率App分享', '读书笔记',
+    '健身打卡', '减肥餐食谱', '旅行攻略', '护肤心得', '美妆教程',
+    '副业推荐', '考研经验', '编程学习', '自媒体运营', '极简生活',
+    '育儿经验', '宠物日常', '家居改造', '周末去哪玩', '省钱技巧',
+    '断舍离', '情绪管理', '时间管理', '副业收入', '面试技巧'
+];
+
+function randomInspire() {
+    const topics = INSPIRE_TOPICS;
+    const topic = topics[Math.floor(Math.random() * topics.length)];
+    const topicInput = document.getElementById('topic');
+    if (topicInput) topicInput.value = topic;
+    showToast('💡 随机灵感: ' + topic + ' — 点击生成开始创作');
+    const styleBtns = document.querySelectorAll('.style-btn');
+    if (styleBtns.length > 0) {
+        const randomIdx = Math.floor(Math.random() * styleBtns.length);
+        styleBtns.forEach(function (b) { b.classList.remove('active'); });
+        styleBtns[randomIdx].classList.add('active');
+    }
+    topicInput?.focus();
+}
+
+// ---- 导出图片（占位） ----
+function exportAsImage() {
+    const notes = getLatestNotes();
+    if (!notes || notes.length === 0) {
+        showToast('请先生成内容');
+        return;
+    }
+    try {
+        const note = notes[0];
+        const data = JSON.stringify({
+            title: note.title,
+            body: note.body,
+            coverText: note.coverText,
+            tags: note.tags,
+            exportedAt: new Date().toISOString()
+        });
+        const base64 = btoa(encodeURIComponent(data).replace(/%([0-9A-F]{2})/g, function (m, p1) {
+            return String.fromCharCode('0x' + p1);
+        }));
+        showToast('✅ 图片数据已生成（占位实现）');
+        console.log('导出 base64 数据:', base64);
+    } catch (e) {
+        showToast('导出失败: ' + e.message);
+    }
+}
+
+// ---- 首次引导关闭 ----
+function closeOnboarding() {
+    localStorage.setItem('xhs_onboarding_done', 'true');
+    closeModal('onboardingModal');
+}
+
+// ---- 覆盖生成函数以增加次数限制 ----
+const _originalGenerateContent = generateContent;
+
+generateContent = function () {
+    if (!checkUsageLimit()) {
+        openModal('upgradeWallModal');
+        return;
+    }
+
+    _originalGenerateContent.apply(this, arguments).then(function () {
+        const notes = getLatestNotes();
+        if (notes && notes.length > 0) {
+            incrementUsage();
+            const style = document.querySelector('.style-btn.active')?.dataset.style || '未知';
+            saveAllToHistory(notes, style);
+            updateUsageBadge();
+            const exportBtn = document.getElementById('exportImageBtn');
+            if (exportBtn) exportBtn.disabled = false;
+        }
+    }).catch(function (err) {
+        console.warn('生成失败:', err);
+    });
+};
