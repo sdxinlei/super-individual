@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, follow">
+    <title>404 - 页面未找到 | 超级个体</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .error-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 120px 24px 60px;
+        }
+        .error-code {
+            font-size: clamp(6rem, 20vw, 12rem);
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(135deg, #6366f1, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -4px;
+            margin-bottom: 8px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        .error-glitch {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            color: #52525b;
+            font-family: "Courier New", monospace;
+            margin-bottom: 24px;
+            letter-spacing: 2px;
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+        }
+        .error-message {
+            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+            color: #d4d4d8;
+            max-width: 480px;
+            margin-bottom: 8px;
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+        .error-hint {
+            font-size: 0.95rem;
+            color: #71717a;
+            max-width: 420px;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.6s ease-out 0.3s both;
+        }
+        .error-actions {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeInUp 0.6s ease-out 0.4s both;
+        }
+        .error-particle {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .error-particle:nth-child(1) { top: 15%; left: 10%; animation: float 8s ease-in-out infinite; }
+        .error-particle:nth-child(2) { top: 75%; left: 85%; animation: float 10s ease-in-out infinite 1s; }
+        .error-particle:nth-child(3) { top: 30%; left: 90%; animation: float 9s ease-in-out infinite 2s; }
+        .error-particle:nth-child(4) { top: 80%; left: 5%; animation: float 11s ease-in-out infinite 0.5s; }
+        .error-particle:nth-child(5) { top: 50%; left: 50%; animation: float 7s ease-in-out infinite 1.5s; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+            50% { transform: translateY(-30px) scale(1.5); opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating particles -->
+    <div class="error-particle"></div>
+    <div class="error-particle"></div>
+    <div class="error-particle"></div>
+    <div class="error-particle"></div>
+    <div class="error-particle"></div>
+
+    <!-- Consistent navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">🚀 超级个体</div>
+            <div class="nav-links">
+                <a href="index.html#works">作品</a>
+                <a href="index.html#services">服务</a>
+                <a href="index.html#about">关于</a>
+                <a href="index.html#contact" class="btn-primary">联系我</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="error-page">
+        <div class="error-code">404</div>
+        <div class="error-glitch">// PAGE_NOT_FOUND</div>
+        <p class="error-message">你找的页面已经漂流到数字宇宙深处了。</p>
+        <p class="error-hint">可能是链接失效，或者页面已被移除。不如先回首页看看？</p>
+        <div class="error-actions">
+            <a href="index.html" class="btn btn-primary">返回首页</a>
+            <a href="index.html#works" class="btn btn-outline">浏览作品</a>
+        </div>
+    </main>
+</body>
+</html>

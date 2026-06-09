@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sdxinlei.github.io/super-individual/sitemap.xml
