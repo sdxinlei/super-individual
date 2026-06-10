@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AI 周报生成器 - 应用逻辑
  * 超级个体 | AI 工具开发者
  */
@@ -295,7 +295,7 @@ function copyReport() {
         window.getSelection().removeAllRanges();
         window.getSelection().addRange(range);
         document.execCommand('copy');
-        showToast('���� 已复制到剪贴板');
+        showToast('📋 已复制到剪贴板');
     });
 }
 
@@ -331,3 +331,4 @@ function showToast(msg) {
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2500);
 }
+
